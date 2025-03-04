@@ -25,24 +25,19 @@ class AdminGUI:
         self.window.mainloop()
 
     def dashboard_screen(self):
-        # Clear the window first
         for widget in self.window.winfo_children():
             widget.destroy()
 
-        # Header
         header = tk.Frame(self.window, bg="#4CAF50", height=80)
         header.pack(fill="x")
         tk.Label(header, text="Admin Dashboard", font=("Arial", 24, "bold"), bg="#4CAF50", fg="white").pack(pady=20)
 
-        # Main Content Frame (Center the button frame)
         main_frame = tk.Frame(self.window, bg="#f0f0f0")
         main_frame.pack(expand=True)
 
-        # Button Frame with two-column layout, centered
         button_frame = tk.Frame(main_frame, bg="#ffffff", relief=tk.GROOVE, bd=2, padx=40, pady=20)
         button_frame.pack(pady=40)
-
-        # Buttons in two columns
+        
         buttons = [
             ("List All Guests", self.list_all_guests),
             ("List All Rooms", self.list_all_rooms),
@@ -67,7 +62,6 @@ class AdminGUI:
                 height=2
             ).grid(row=row, column=col, padx=10, pady=10)
 
-        # Logout Button at the bottom, centered across both columns
         tk.Button(
             main_frame, 
             text="Logout", 
@@ -81,8 +75,8 @@ class AdminGUI:
 
         
     def logout(self):
-        self.window.destroy()  # Close the current window
-        self.login_screen.deiconify()  # Show the login screen again
+        self.window.destroy()
+        self.login_screen.deiconify() # show login screen
    
     def list_all_guests(self):
         guests = self.user_model.get_all_guests()
@@ -137,7 +131,6 @@ class AdminGUI:
 
         tree.pack(fill=tk.BOTH, expand=True)
 
-        print(rooms)  # This will show all the data fetched from the database.
         # Insert room data into the table
         for room in rooms:
             room_id, room_type, capacity, price, meal, wifi, usable = room
@@ -160,23 +153,19 @@ class AdminGUI:
         frame = tk.Frame(room_window, bg="#ffffff", padx=20, pady=20, relief=tk.GROOVE, bd=2)
         frame.pack(pady=10)
 
-        # Room Type Dropdown
         tk.Label(frame, text="Room Type:", font=("Arial", 12)).grid(row=0, column=0, sticky="w", pady=5)
         room_type_dropdown = ttk.Combobox(frame, font=("Arial", 12), state="readonly" , values=["AC", "Non-AC", "Deluxe", "Local"])
         room_type_dropdown.set("AC")
         room_type_dropdown.grid(row=0, column=1, pady=5)
 
-        # Capacity Entry
         tk.Label(frame, text="Capacity:", font=("Arial", 12)).grid(row=1, column=0, sticky="w", pady=5)
         capacity_entry = tk.Entry(frame, font=("Arial", 12))
         capacity_entry.grid(row=1, column=1, pady=5)
 
-        # Price per Day Entry
         tk.Label(frame, text="Price per Day:", font=("Arial", 12)).grid(row=2, column=0, sticky="w", pady=5)
         price_entry = tk.Entry(frame, font=("Arial", 12))
         price_entry.grid(row=2, column=1, pady=5)
 
-        # Meal Included Dropdown
         tk.Label(frame, text="Meal Included:", font=("Arial", 12)).grid(row=3, column=0, sticky="w", pady=5)
         meal_dropdown = ttk.Combobox(frame, font=("Arial", 12), state="readonly" ,values=["Yes", "No"])
         meal_dropdown.set("No")
@@ -189,17 +178,12 @@ class AdminGUI:
         wifi_dropdown.grid(row=4, column=1, pady=5)
 
         def add_room():
-            # Fetch values at the moment of button click
             room_type = room_type_dropdown.get()
             capacity = capacity_entry.get().strip()
             price = price_entry.get().strip()
             meal = meal_dropdown.get()
             wifi = wifi_dropdown.get()
 
-            # Debugging: Print fetched values to verify correctness
-            print(f"Room Type: {room_type}, Capacity: {capacity}, Price: {price}, Meal: {meal}, Wi-Fi: {wifi}")
-
-            # Validate inputs
             if not (room_type and capacity and price and meal and wifi):
                 messagebox.showerror("Input Error", "All fields must be filled.")
                 return
@@ -227,11 +211,40 @@ class AdminGUI:
 
     def list_pending_bookings(self):
         bookings = self.booking_model.get_all_pending_bookings()
-        self.display_booking_data(bookings, "Pending Bookings")
+        self.display_pending_data(bookings, "Pending Bookings")
 
     def list_all_bookings(self):
         bookings = self.booking_model.get_all_bookings()
         self.display_booking_data(bookings, "All Bookings")
+
+    def display_pending_data(self, bookings, title):
+        if not bookings:
+            messagebox.showinfo("No Data", f"No {title.lower()} available.")
+            return
+
+        booking_window = tk.Toplevel(self.window)
+        booking_window.title(title)
+        booking_window.geometry("800x500")
+
+        frame = tk.Frame(booking_window)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        tree = ttk.Treeview(frame, columns=("Booking ID", "Name", "Room ID", "Check-In Date"), show='headings')
+
+        for col in tree["columns"]:
+            tree.heading(col, text=col)
+            tree.column(col, width=120, anchor="center")
+
+        vsb = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
+        hsb = ttk.Scrollbar(frame, orient="horizontal", command=tree.xview)
+        tree.configure(yscroll=vsb.set, xscroll=hsb.set)
+        vsb.pack(side="right", fill="y")
+        hsb.pack(side="bottom", fill="x")
+
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        for booking in bookings:
+            tree.insert('', tk.END, values=booking)
 
     def display_booking_data(self, bookings, title):
         if not bookings:
@@ -245,7 +258,7 @@ class AdminGUI:
         frame = tk.Frame(booking_window)
         frame.pack(fill=tk.BOTH, expand=True)
 
-        tree = ttk.Treeview(frame, columns=("ID", "Room ID", "Guest ID", "Check-In Date", "Check-Out Date"), show='headings')
+        tree = ttk.Treeview(frame, columns=("Booking ID", "User ID", "Name", "Room ID", "Check-In Date", "Check-out-Date", "Payment Status"), show='headings')
 
         for col in tree["columns"]:
             tree.heading(col, text=col)
@@ -313,23 +326,22 @@ class AdminGUI:
         tk.Button(disband_window, text="Disband Room", command=disband_room, font=("Arial", 12), bg="#FF5722", fg="white").pack(pady=20)
         
     def generate_report(self):
-        # Data Fetching Queries
-        bookings = self.booking_model.get_all_bookings()  # [(id, user_id, room_id, check_in_date, check_out_date, payment_status), ...]
+        bookings = self.booking_model.get_all_bookings()
         room_usage = defaultdict(int)
         revenue_by_room_type = defaultdict(float)
         payment_status = {"clear": 0, "pending": 0}
         bookings_over_time = defaultdict(int)
 
         for booking in bookings:
-            _, user_id, room_id, check_in_date, check_out_date, status = booking
-            room = self.room_model.get_room_by_id(room_id)  # Assuming this returns (id, room_type, capacity, price_per_day, ...)
+            _, user_id, user_name, room_id, check_in_date, check_out_date, status = booking
+            room = self.room_model.get_room_by_id(room_id)
             
             # 1. Room Usage by Room Type
-            room_type = room[1]  # room[1] is the room_type (e.g., "AC", "Non-AC", "Deluxe")
+            room_type = room[1] 
             room_usage[room_type] += 1
 
             # 2. Revenue by Room Type
-            price_per_day = room[3]  # room[3] is the price_per_day
+            price_per_day = room[3]
             check_in_date = datetime.datetime.strptime(check_in_date, "%Y-%m-%d")
             check_out_date = datetime.datetime.strptime(check_out_date, "%Y-%m-%d") if check_out_date else datetime.datetime.now()
             days_stayed = (check_out_date - check_in_date).days
@@ -341,6 +353,11 @@ class AdminGUI:
             # 4. Payment Status Distribution
             if status in payment_status:
                 payment_status[status] += 1
+        
+        print(room_usage)
+        print(revenue_by_room_type)
+        print(payment_status)
+        print(bookings_over_time)
 
         # Create a figure with multiple subplots
         fig = plt.figure(figsize=(12, 8))

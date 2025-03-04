@@ -1,6 +1,6 @@
 import tkinter as tk
 import sqlite3
-import re
+import re   # for validating email & password
 from tkinter import messagebox
 from models.user_model import UserModel
 from gui.admin_gui import AdminGUI
@@ -12,7 +12,7 @@ class LoginGUI:
         self.window = tk.Tk()
         self.window.title("PG Management System - Login")
         self.window.geometry("600x400")
-        self.window.configure(bg="#f0f0f0")  # Light background color
+        self.window.configure(bg="#f0f0f0")
 
         self.user_model = UserModel()
 
@@ -35,7 +35,6 @@ class LoginGUI:
         password_entry.grid(row=1, column=1, pady=5)
 
         def clear_fields():
-            """ Clears the email and password fields. """
             email_entry.delete(0, tk.END)
             password_entry.delete(0, tk.END)
 
@@ -51,18 +50,19 @@ class LoginGUI:
 
             if user_type == "admin":
                 messagebox.showinfo("Login Successful", "Welcome Admin!")
-                clear_fields()  # Clear fields before proceeding
+                clear_fields()
                 self.window.withdraw()
                 AdminGUI(self.window).run()
             elif user_type == "guest":
                 messagebox.showinfo("Login Successful", "Welcome Guest!")
                 guest_id = self.get_guest_id(email)
-                clear_fields()  # Clear fields before proceeding
+                guest_name = self.get_guest_name(email)
+                clear_fields()
                 self.window.withdraw()
-                GuestGUI(guest_id, self.window).run()
+                GuestGUI(guest_id, guest_name, self.window).run()
             else:
                 messagebox.showerror("Login Failed", "Invalid credentials!")
-                clear_fields()  # Clear fields on failed login
+                clear_fields()
 
         tk.Button(frame, text="Login", command=login, font=("Arial", 12), bg="#4CAF50", fg="white").grid(row=2, columnspan=2, pady=10)
         tk.Button(self.window, text="Sign Up", command=self.signup_screen, font=("Arial", 12), bg="#2196F3", fg="white").pack(pady=5)
@@ -77,6 +77,14 @@ class LoginGUI:
         user_id = cursor.fetchone()
         connection.close()
         return user_id[0] if user_id else None
+    
+    def get_guest_name(self, email):
+        connection = sqlite3.connect("db/pg_management.db")
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM users WHERE email = ?", (email,))
+        user_name = cursor.fetchone()
+        connection.close()
+        return user_name[0] if user_name else None
 
     def signup_screen(self):
         self.window.destroy()
@@ -138,7 +146,7 @@ class LoginGUI:
             if self.user_model.create_user(name, email, phone, address, password):
                 messagebox.showinfo("Sign Up Successful", "You can now log in!")
                 signup_window.destroy()
-                self.__init__()  # Reinitialize the login window
+                self.__init__()
                 self.run()
             else:
                 messagebox.showerror("Sign Up Failed", "User already exists!")

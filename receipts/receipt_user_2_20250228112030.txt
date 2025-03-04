@@ -1,9 +1,10 @@
 
     PG-Nest Payment Receipt
     -------------------------
-    User ID: 5
-    Amount Paid: 38400.0 INR
-    Date: 2025-02-10 10:51:18
+    User ID: 2
+    User NAME: Shivangi
+    Amount Paid: 16000.0 INR
+    Date: 2025-02-28 11:20:30
     -------------------------
     Thank you for staying with PG-Nest!
     

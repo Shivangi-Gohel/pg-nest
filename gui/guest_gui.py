@@ -8,8 +8,9 @@ from datetime import datetime
 
 
 class GuestGUI:
-    def __init__(self, guest_id , login_screen):
+    def __init__(self, guest_id , guest_name, login_screen):
         self.guest_id = guest_id
+        self.guest_name = guest_name
         self.window = tk.Tk()
         self.login_screen_callback = login_screen
         self.window.title("Guest Dashboard | PG-Nest")
@@ -28,8 +29,8 @@ class GuestGUI:
         self.window.mainloop()
 
     def logout(self):
-        self.window.destroy()  # Close the current window
-        self.login_screen_callback.deiconify()  # Show the login screen again
+        self.window.destroy()
+        self.login_screen_callback.deiconify()  # Show login screen
 
     def clear_frame(self):
         for widget in self.main_frame.winfo_children():
@@ -43,10 +44,8 @@ class GuestGUI:
         tk.Label(self.main_frame, text="Guest Dashboard", font=("Arial", 24, "bold"), bg="#f0f8ff").pack(pady=10)
 
         active_booking = self.booking_model.has_pending_bookings(self.guest_id)
-        print(active_booking)
         
         if active_booking:
-            # User has an active booking
             tk.Button(self.main_frame, text="View Booking Details", command=lambda: self.view_booking_details(self.guest_id), font=("Arial", 14),
                       bg="#4CAF50", fg="white", width=30).pack(pady=10)
 
@@ -77,7 +76,7 @@ class GuestGUI:
         bookings = self.booking_model.get_bookings_by_guest(guest_id)
 
         if bookings:
-            columns = ("Booking ID", "Room ID", "Check-In Date", "Check-Out Date", "Amount Paid", "Status")
+            columns = ("Booking ID", "User ID", "User Name", "Room ID", "Check-In Date", "Amount Paid", "Status")
             tree = ttk.Treeview(self.main_frame, columns=columns, show="headings", height=10)
 
             for col in columns:
@@ -97,7 +96,7 @@ class GuestGUI:
    
     def pay_and_checkout(self):
         bill = self.booking_model.calculate_current_bill(self.guest_id)
-        receipt_path = generate_receipt(self.guest_id, bill)
+        receipt_path = generate_receipt(self.guest_id, self.guest_name, bill)
         self.booking_model.check_out(self.guest_id)
         messagebox.showinfo("Payment Successful", f"Your bill of {bill} INR has been paid. You are now checked out.\nReceipt saved at: {receipt_path}")
         self.dashboard_screen()
@@ -130,7 +129,6 @@ class GuestGUI:
         self.clear_frame()
         tk.Label(self.main_frame, text="Rooms Sorted by Price", font=("Arial", 20, "bold"), bg="#f0f8ff").pack(pady=10)
 
-        # Retrieve all rooms and sort by price
         sorted_rooms = self.room_model.sort_by_price()
 
         if sorted_rooms:
@@ -166,15 +164,12 @@ class GuestGUI:
         def confirm_booking():
             check_in_date = checkin_date_entry.get()
             try:
-                # Validate date format
                 date_obj = datetime.strptime(check_in_date, "%Y-%m-%d")
                 
-                # Check if the date is today or in the future
                 if date_obj.date() > datetime.now().date():
                     raise ValueError("Enter valid date ")
                 
-                # If validation passes, proceed with booking
-                self.booking_model.create_booking(self.guest_id, room[0], check_in_date)
+                self.booking_model.create_booking(self.guest_id, self.guest_name, room[0], check_in_date)
                 messagebox.showinfo("Booking Successful", f"Room {room[0]} booked successfully!")
                 dialog.destroy()
                 self.dashboard_screen()
@@ -192,7 +187,7 @@ class GuestGUI:
         self.clear_frame()
         tk.Label(self.main_frame, text="Available Rooms", font=("Arial", 20, "bold"), bg="#f0f8ff").pack(pady=10)
 
-        if not rooms:  # Check if rooms list is empty
+        if not rooms:
             tk.Label(self.main_frame, text="No rooms available.", font=("Arial", 16), fg="red", bg="#f0f8ff").pack(pady=20)
         else:
             columns = ("Room ID", "Type", "Capacity", "Price", "Meal Included", "Wi-Fi")
@@ -203,7 +198,6 @@ class GuestGUI:
                 tree.column(col, width=120)
 
             for room in rooms:
-                # Convert 1 to "Yes" and 0 to "No" for "Meal Included" and "Wi-Fi"
                 meal_included = "Yes" if room[4] == 1 else "No"
                 wifi = "Yes" if room[5] == 1 else "No"
                 tree.insert("", "end", values=(room[0], room[1], room[2], room[3], meal_included, wifi))
@@ -218,8 +212,6 @@ class GuestGUI:
                 else:
                     messagebox.showwarning("No Room Selected", "Please select a room before booking.")
 
-            # "Book Now" button to open the booking dialog
             tk.Button(self.main_frame, text="Book Now", command=book_selected_room, font=("Arial", 14), bg="#4CAF50", fg="white").pack(pady=10)
 
-        # Back button to return to the main dashboard
         tk.Button(self.main_frame, text="Back", command=self.back_to_dashboard, font=("Arial", 14), bg="#FF5722", fg="white").pack(pady=10)

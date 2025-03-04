@@ -1,0 +1,10 @@
+
+    PG-Nest Payment Receipt
+    -------------------------
+    User ID: 3
+    User NAME: Mahi Rana
+    Amount Paid: 72000.0 INR
+    Date: 2025-02-28 00:11:26
+    -------------------------
+    Thank you for staying with PG-Nest!
+    

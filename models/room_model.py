@@ -34,8 +34,7 @@ class RoomModel:
             if self.booking_model.is_room_in_use(room_id):
                 print("Cannot disband the room because it is currently in use.")
                 return False
-            
-            # Proceed to disband the room if it is not in use
+
             connection = sqlite3.connect(self.db_path)
             cursor = connection.cursor()
             cursor.execute("UPDATE rooms SET is_usable = 0 WHERE id = ? AND is_usable = 1", (room_id,))

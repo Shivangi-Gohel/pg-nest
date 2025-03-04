@@ -1,4 +1,3 @@
-# db_setup.py
 import sqlite3
 
 def setup_database():
@@ -47,6 +46,7 @@ def setup_database():
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
+            user_name TEXT,
             room_id INTEGER NOT NULL,
             check_in_date TEXT NOT NULL,
             check_out_date TEXT,

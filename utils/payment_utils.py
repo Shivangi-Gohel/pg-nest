@@ -1,11 +1,12 @@
 import os
 from datetime import datetime
 
-def generate_receipt(user_id, amount):
+def generate_receipt(user_id, user_name, amount):
     receipt_content = f"""
     PG-Nest Payment Receipt
     -------------------------
     User ID: {user_id}
+    User NAME: {user_name}
     Amount Paid: {amount} INR
     Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
     -------------------------

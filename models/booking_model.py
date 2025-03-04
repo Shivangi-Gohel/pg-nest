@@ -6,15 +6,15 @@ class BookingModel:
     def __init__(self):
         self.db_path = "db/pg_management.db"
 
-    def create_booking(self, user_id, room_id, check_in_date):
+    def create_booking(self, user_id, user_name, room_id, check_in_date):
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
         cursor.execute(
             '''
-            INSERT INTO bookings (user_id, room_id, check_in_date, payment_status)
-            VALUES (?, ?, ?, 'pending')
+            INSERT INTO bookings (user_id, user_name, room_id, check_in_date, payment_status)
+            VALUES (?, ?, ?, ?, 'pending')
             ''',
-            (user_id, room_id, check_in_date)
+            (user_id, user_name, room_id, check_in_date)
         )
         connection.commit()
         connection.close()
@@ -113,7 +113,7 @@ class BookingModel:
     def get_all_pending_bookings(self):
         connection = sqlite3.connect(self.db_path)
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM bookings WHERE check_out_date IS NULL")
+        cursor.execute("SELECT id, user_name, room_id, check_in_date FROM bookings WHERE check_out_date IS NULL")
         bookings = cursor.fetchall()
         connection.close()
         return bookings
